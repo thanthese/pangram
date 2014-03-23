@@ -56,7 +56,7 @@ func main() {
 	PrintPangrams(threshold, wordlist)
 }
 
-func PrintPangrams(theshold int, wordlist []string) {
+func PrintPangrams(threshold int, wordlist []string) {
 	fmt.Println("Building anagrams list...")
 	singlesOnly := removeDoubles(wordlist)
 	anagrams := buildAnagrams(singlesOnly)
@@ -69,7 +69,7 @@ func PrintPangrams(theshold int, wordlist []string) {
 	used := set{}
 	found := []string{}
 	out := make(chan []string)
-	recur(used, found, words, out, nil, anagrams)
+	recur(used, found, words, out, nil)
 
 	for words := range out {
 		prettyFinding(words, anagrams)
@@ -172,8 +172,7 @@ func prettyFinding(words []string, anagrams map[string][]string) {
 }
 
 func recur(used set, foundwords []string, potentials []string,
-	out chan []string, done chan int,
-	anagrams map[string][]string) {
+	out chan []string, done chan int) {
 
 	if len(used) == 26 || len(potentials) == 0 {
 		if len(used) >= threshold {
@@ -209,9 +208,9 @@ func recur(used set, foundwords []string, potentials []string,
 
 		if len(foundwords) == 0 {
 			threads++
-			go recur(u, fw, ps, out, d, anagrams)
+			go recur(u, fw, ps, out, d)
 		} else {
-			recur(u, fw, ps, out, done, anagrams)
+			recur(u, fw, ps, out, done)
 		}
 	}
 
