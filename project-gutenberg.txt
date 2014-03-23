@@ -391,7 +391,6 @@ voice
 vocation
 vocal
 vocabulary
-viz
 vividly
 vivid
 vivacity
@@ -9041,7 +9040,6 @@ advancing
 advancement
 advanced
 advance
-adv
 adult
 adorned
 adorn
@@ -9070,7 +9068,6 @@ adjustment
 adjoining
 adjective
 adjacent
-adj
 adieu
 adequate
 adds
