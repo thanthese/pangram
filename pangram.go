@@ -12,11 +12,17 @@ import (
 
 // todo
 //
+// - I don't like that recur() prints. It would be better if it returned its
+// results (preferrably via channel, so the user can still watch results come
+// in in real time) and the caller dealt with printing.
+//
 // - None of my results contain a 'q' or 'z'. Maybe I can *force* the first two
 // words to have those letters. Then I could use a larger dictionary, but skip
 // the cost of a ton of computation.
 
 var alphabet = "abcdefghijklmnopqrstuvwxyz"
+
+var threshold int
 
 // we'll fake a set with a map
 type set map[rune]bool
@@ -36,11 +42,12 @@ func main() {
 		usage()
 	}
 
-	threshold, err := strconv.Atoi(os.Args[1])
-	if err != nil || threshold < 0 {
+	th, err := strconv.Atoi(os.Args[1])
+	if err != nil || th < 0 {
 		fmt.Println(err.Error())
 		usage()
 	}
+	threshold = th
 
 	fmt.Println("Loading word list...")
 	path := os.Args[2]
@@ -49,7 +56,7 @@ func main() {
 	PrintPangrams(threshold, wordlist)
 }
 
-func PrintPangrams(threshold int, wordlist []string) {
+func PrintPangrams(theshold int, wordlist []string) {
 	fmt.Println("Building anagrams list...")
 	singlesOnly := removeDoubles(wordlist)
 	anagrams := buildAnagrams(singlesOnly)
@@ -62,12 +69,10 @@ func PrintPangrams(threshold int, wordlist []string) {
 	used := set{}
 	found := []string{}
 	out := make(chan []string)
-	recur(used, found, words, out, nil)
+	recur(used, found, words, out, nil, anagrams)
 
 	for words := range out {
-		if len(used) >= threshold {
-			prettyFinding(words, anagrams)
-		}
+		prettyFinding(words, anagrams)
 	}
 }
 
@@ -167,10 +172,13 @@ func prettyFinding(words []string, anagrams map[string][]string) {
 }
 
 func recur(used set, foundwords []string, potentials []string,
-	out chan []string, done chan int) {
+	out chan []string, done chan int,
+	anagrams map[string][]string) {
 
 	if len(used) == 26 || len(potentials) == 0 {
-		out <- foundwords
+		if len(used) >= threshold {
+			out <- foundwords
+		}
 		if len(foundwords) == 1 {
 			done <- 1
 		}
@@ -201,9 +209,9 @@ func recur(used set, foundwords []string, potentials []string,
 
 		if len(foundwords) == 0 {
 			threads++
-			go recur(u, fw, ps, out, d)
+			go recur(u, fw, ps, out, d, anagrams)
 		} else {
-			recur(u, fw, ps, out, done)
+			recur(u, fw, ps, out, done, anagrams)
 		}
 	}
 
