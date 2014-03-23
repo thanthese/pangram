@@ -14,7 +14,7 @@ import (
 // - There seems to be a bug, or at least something I don't understand, where
 // sets of words are printed twice.
 //
-// - I don't like how recur() prints. It would be better if it returned its
+// - I don't like that recur() prints. It would be better if it returned its
 // results (preferrably via channel, so the user can still watch results come
 // in in real time) and the caller dealt with printing.
 //
@@ -188,8 +188,8 @@ func runesCount(words []string) int {
 // checked off by the used set. That is, the word only contains still allowable
 // letters.
 func wordFits(used set, word string) bool {
-	for _, c := range word {
-		if used[c] {
+	for _, r := range word {
+		if used[r] {
 			return false
 		}
 	}
