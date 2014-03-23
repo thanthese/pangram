@@ -11,9 +11,6 @@ import (
 
 // todo
 //
-// - There seems to be a bug, or at least something I don't understand, where
-// sets of words are printed twice.
-//
 // - I don't like that recur() prints. It would be better if it returned its
 // results (preferrably via channel, so the user can still watch results come
 // in in real time) and the caller dealt with printing.
@@ -46,7 +43,7 @@ func main() {
 	}
 
 	th, err := strconv.Atoi(os.Args[1])
-	if err != nil {
+	if err != nil || th < 0 {
 		fmt.Println(err.Error())
 		usage()
 	}
@@ -56,11 +53,15 @@ func main() {
 	path := os.Args[2]
 	wordlist := loadWordList(path)
 
+	PrintPangrams(threshold, wordlist)
+}
+
+func PrintPangrams(theshold int, wordlist []string) {
 	fmt.Println("Building anagrams list...")
 	singlesOnly := removeDoubles(wordlist)
 	anagrams := buildAnagrams(singlesOnly)
 	words := mapKeys(anagrams)
-	fmt.Println("- ", len(wordlist), "list length")
+	fmt.Println("- ", len(wordlist), "words")
 	fmt.Println("- ", len(singlesOnly), "with unique letters")
 	fmt.Println("- ", len(anagrams), "anagrams")
 
@@ -84,7 +85,31 @@ func loadWordList(path string) []string {
 		fmt.Println(err.Error())
 		usage()
 	}
-	return strings.Split(string(content), "\n")
+	words := strings.Split(string(content), "\n")
+
+	for _, word := range words {
+		for _, r := range word {
+			if !strings.ContainsRune(alphabet, r) {
+				fmt.Printf("Error: Word \"%s\" contains invalid character '%s'\n", word, string(r))
+				usage()
+			}
+		}
+	}
+
+	nonzeroWords := make([]string, 0, len(words))
+	for _, w := range words {
+		if len(w) > 0 {
+			nonzeroWords = append(nonzeroWords, w)
+		}
+	}
+
+	if len(nonzeroWords) < 10 {
+		fmt.Printf("Error: file \"%s\" doesn't contain enough words (only %d).\n",
+			path, len(nonzeroWords))
+		usage()
+	}
+
+	return nonzeroWords
 }
 
 func buildAnagrams(words []string) map[string][]string {
@@ -136,9 +161,7 @@ func containsDoubles(word string) bool {
 func prettyFinding(words []string, anagrams map[string][]string) {
 	fmt.Print(runesCount(words))
 	for _, w := range words {
-		if len(w) > 0 {
-			fmt.Print(" ", anagrams[w])
-		}
+		fmt.Print(" ", anagrams[w])
 	}
 	fmt.Println()
 }
