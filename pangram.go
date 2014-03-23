@@ -69,10 +69,69 @@ func PrintPangrams(threshold int, wordlist []string) {
 	used := set{}
 	found := []string{}
 	out := make(chan []string)
-	recur(used, found, words, out, nil)
+	recur(used, found, words, out, nil, anagrams)
 
 	for words := range out {
-		prettyFinding(words, anagrams)
+		_ = words
+		// prettyFinding(words, anagrams)
+	}
+}
+
+func recur(used set, foundwords []string, potentials []string,
+	out chan []string, done chan int, anagrams map[string][]string) {
+
+	if len(used) == 26 || len(potentials) == 0 {
+		if len(used) >= threshold {
+			prettyFinding(foundwords, anagrams)
+			out <- foundwords
+		}
+		if len(foundwords) == 1 {
+			done <- 1
+		}
+		return
+	}
+
+	threads := 0
+	d := make(chan int)
+	for i, word := range potentials {
+
+		// prepare new set
+		u := copymap(used)
+		for _, r := range word {
+			u[r] = true
+		}
+
+		// prepare new foundwords
+		fw := append(foundwords, word)
+
+		// prepare (filter) new potentials
+		ps := make([]string, 0, len(potentials))
+		for j := i + 1; j < len(potentials); j++ {
+			w := potentials[j]
+			if len(w)+len(u) <= 26 && wordFits(u, w) {
+				ps = append(ps, w)
+			}
+		}
+
+		if len(foundwords) == 0 {
+			threads++
+			go recur(u, fw, ps, out, d, anagrams)
+		} else {
+			recur(u, fw, ps, out, done, anagrams)
+		}
+	}
+
+	if len(foundwords) == 0 {
+		go func() {
+			for i := 0; i < threads; i++ {
+				<-d
+				// fmt.Printf("%d threads remaining\n", threads-i)
+			}
+			close(d)
+			close(out)
+		}()
+	} else if len(foundwords) == 1 {
+		done <- 1
 	}
 }
 
@@ -165,67 +224,11 @@ func containsDoubles(word string) bool {
 
 func prettyFinding(words []string, anagrams map[string][]string) {
 	fmt.Print(runesCount(words))
+	sort.Strings(words)
 	for _, w := range words {
 		fmt.Print(" ", anagrams[w])
 	}
 	fmt.Println()
-}
-
-func recur(used set, foundwords []string, potentials []string,
-	out chan []string, done chan int) {
-
-	if len(used) == 26 || len(potentials) == 0 {
-		if len(used) >= threshold {
-			out <- foundwords
-		}
-		if len(foundwords) == 1 {
-			done <- 1
-		}
-		return
-	}
-
-	threads := 0
-	d := make(chan int)
-	for i, word := range potentials {
-
-		// prepare new set
-		u := copymap(used)
-		for _, r := range word {
-			u[r] = true
-		}
-
-		// prepare new foundwords
-		fw := append(foundwords, word)
-
-		// prepare (filter) new potentials
-		ps := make([]string, 0, len(potentials))
-		for j := i + 1; j < len(potentials); j++ {
-			w := potentials[j]
-			if len(w)+len(u) <= 26 && wordFits(u, w) {
-				ps = append(ps, w)
-			}
-		}
-
-		if len(foundwords) == 0 {
-			threads++
-			go recur(u, fw, ps, out, d)
-		} else {
-			recur(u, fw, ps, out, done)
-		}
-	}
-
-	if len(foundwords) == 0 {
-		go func() {
-			for i := 0; i < threads; i++ {
-				<-d
-				// fmt.Printf("%d threads remaining\n", threads-i)
-			}
-			close(d)
-			close(out)
-		}()
-	} else if len(foundwords) == 1 {
-		done <- 1
-	}
 }
 
 // Return the sum of lengths of all words in the list.
