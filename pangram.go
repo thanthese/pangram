@@ -12,17 +12,11 @@ import (
 
 // todo
 //
-// - I don't like that recur() prints. It would be better if it returned its
-// results (preferrably via channel, so the user can still watch results come
-// in in real time) and the caller dealt with printing.
-//
 // - None of my results contain a 'q' or 'z'. Maybe I can *force* the first two
 // words to have those letters. Then I could use a larger dictionary, but skip
 // the cost of a ton of computation.
 
 var alphabet = "abcdefghijklmnopqrstuvwxyz"
-
-var threshold int
 
 // we'll fake a set with a map
 type set map[rune]bool
@@ -42,12 +36,11 @@ func main() {
 		usage()
 	}
 
-	th, err := strconv.Atoi(os.Args[1])
-	if err != nil || th < 0 {
+	threshold, err := strconv.Atoi(os.Args[1])
+	if err != nil || threshold < 0 {
 		fmt.Println(err.Error())
 		usage()
 	}
-	threshold = th
 
 	fmt.Println("Loading word list...")
 	path := os.Args[2]
@@ -69,22 +62,30 @@ func PrintPangrams(threshold int, wordlist []string) {
 	used := set{}
 	found := []string{}
 	out := make(chan []string)
-	recur(used, found, words, out, nil, anagrams)
+	recur(used, found, words, out, nil)
 
+	n := 0
 	for words := range out {
-		_ = words
-		// prettyFinding(words, anagrams)
+		n++
+		if runesCount(words) >= threshold {
+			prettyFinding(words, anagrams)
+		}
 	}
+	fmt.Printf("Total leaves seen: %d\n", n)
 }
 
 func recur(used set, foundwords []string, potentials []string,
-	out chan []string, done chan int, anagrams map[string][]string) {
+	out chan []string, done chan int) {
 
 	if len(used) == 26 || len(potentials) == 0 {
-		if len(used) >= threshold {
-			prettyFinding(foundwords, anagrams)
-			out <- foundwords
+
+		// why does making a copy of foundwords prevent a bug?
+		ret := make([]string, len(foundwords))
+		for i := range foundwords {
+			ret[i] = foundwords[i]
 		}
+		out <- ret
+
 		if len(foundwords) == 1 {
 			done <- 1
 		}
@@ -115,9 +116,9 @@ func recur(used set, foundwords []string, potentials []string,
 
 		if len(foundwords) == 0 {
 			threads++
-			go recur(u, fw, ps, out, d, anagrams)
+			go recur(u, fw, ps, out, d)
 		} else {
-			recur(u, fw, ps, out, done, anagrams)
+			recur(u, fw, ps, out, done)
 		}
 	}
 
