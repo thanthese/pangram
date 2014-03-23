@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -14,9 +15,6 @@ import (
 // - I don't like that recur() prints. It would be better if it returned its
 // results (preferrably via channel, so the user can still watch results come
 // in in real time) and the caller dealt with printing.
-//
-// - It would be nice if recur was executing in multiple goroutines in
-// parallel, for speed and whatnot.
 //
 // - None of my results contain a 'q' or 'z'. Maybe I can *force* the first two
 // words to have those letters. Then I could use a larger dictionary, but skip
@@ -38,6 +36,8 @@ func usage() {
 }
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+
 	if len(os.Args) < 2 {
 		usage()
 	}
@@ -68,7 +68,12 @@ func PrintPangrams(theshold int, wordlist []string) {
 	fmt.Println("Finding pangrams...")
 	used := set{}
 	found := []string{}
-	recur(used, found, words, anagrams)
+	out := make(chan []string)
+	recur(used, found, words, out, nil, anagrams)
+
+	for words := range out {
+		prettyFinding(words, anagrams)
+	}
 }
 
 func mapKeys(m map[string][]string) []string {
@@ -166,14 +171,22 @@ func prettyFinding(words []string, anagrams map[string][]string) {
 	fmt.Println()
 }
 
-func recur(used set, foundwords []string, potentials []string, anagrams map[string][]string) {
+func recur(used set, foundwords []string, potentials []string,
+	out chan []string, done chan int,
+	anagrams map[string][]string) {
+
 	if len(used) == 26 || len(potentials) == 0 {
 		if len(used) >= threshold {
-			prettyFinding(foundwords, anagrams)
+			out <- foundwords
+		}
+		if len(foundwords) == 1 {
+			done <- 1
 		}
 		return
 	}
 
+	threads := 0
+	d := make(chan int)
 	for i, word := range potentials {
 
 		// prepare new set
@@ -194,7 +207,25 @@ func recur(used set, foundwords []string, potentials []string, anagrams map[stri
 			}
 		}
 
-		recur(u, fw, ps, anagrams)
+		if len(foundwords) == 0 {
+			threads++
+			go recur(u, fw, ps, out, d, anagrams)
+		} else {
+			recur(u, fw, ps, out, done, anagrams)
+		}
+	}
+
+	if len(foundwords) == 0 {
+		go func() {
+			for i := 0; i < threads; i++ {
+				<-d
+				// fmt.Printf("%d threads remaining\n", threads-i)
+			}
+			close(d)
+			close(out)
+		}()
+	} else if len(foundwords) == 1 {
+		done <- 1
 	}
 }
 

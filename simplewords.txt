@@ -147,8 +147,8 @@ check
 child
 choice
 choose
-Christ
-Christmas
+christ
+christmas
 church
 city
 claim
