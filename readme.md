@@ -26,7 +26,8 @@ My solution was to restrict my search to commonly used words.
 
 ## Results
 
-My best results after using the 10,000 most commonly used words found in all [Project Gutenberg][pg] books:
+My best results after using the 10,000 most commonly used words found in all
+[Project Gutenberg][pg] books:
 
 [pg]: http://www.gutenberg.org/
 
@@ -36,3 +37,8 @@ My best results after using the 10,000 most commonly used words found in all [Pr
     24 [why] [drag] [blocks] [fix] [vent] [jump]
     24 [why] [grand] [block] [vest] [fix] [jump]
     24 [why] [grind] [fox] [vest] [black] [jump]
+
+And after using the full dictionary (removing abbreviations and other
+obscure and non-words) I got one more:
+
+    24 [quartz] [womb] [decks] [glyph] [jinx]
