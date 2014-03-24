@@ -82,20 +82,6 @@ func recur(used set, foundwords []string, potentials []string,
 		out <- ret
 	}
 
-	if len(foundwords) == 1 {
-		if !strings.Contains(foundwords[0], "q") {
-			done <- 1
-			return
-		}
-	}
-
-	if len(foundwords) == 2 {
-		if !strings.Contains(foundwords[0], "z") &&
-			!strings.Contains(foundwords[1], "z") {
-			return
-		}
-	}
-
 	threads := 0
 	d := make(chan int)
 	for i, word := range potentials {
