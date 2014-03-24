@@ -16,7 +16,7 @@ import (
 // words to have those letters. Then I could use a larger dictionary, but skip
 // the cost of a ton of computation.
 
-var alphabet = "abcdefghijklmnopqrstuvwxyz"
+const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
 // we'll fake a set with a map
 type set map[rune]bool
@@ -78,18 +78,22 @@ func recur(used set, foundwords []string, potentials []string,
 	out chan []string, done chan int) {
 
 	if len(used) == 26 || len(potentials) == 0 {
-
-		// why does making a copy of foundwords prevent a bug?
-		ret := make([]string, len(foundwords))
-		for i := range foundwords {
-			ret[i] = foundwords[i]
-		}
+		ret := listcopy(foundwords)
 		out <- ret
+	}
 
-		if len(foundwords) == 1 {
+	if len(foundwords) == 1 {
+		if !strings.Contains(foundwords[0], "q") {
 			done <- 1
+			return
 		}
-		return
+	}
+
+	if len(foundwords) == 2 {
+		if !strings.Contains(foundwords[0], "z") &&
+			!strings.Contains(foundwords[1], "z") {
+			return
+		}
 	}
 
 	threads := 0
@@ -103,7 +107,8 @@ func recur(used set, foundwords []string, potentials []string,
 		}
 
 		// prepare new foundwords
-		fw := append(foundwords, word)
+		fw := listcopy(foundwords)
+		fw = append(fw, word)
 
 		// prepare (filter) new potentials
 		ps := make([]string, 0, len(potentials))
@@ -118,7 +123,7 @@ func recur(used set, foundwords []string, potentials []string,
 			threads++
 			go recur(u, fw, ps, out, d)
 		} else {
-			recur(u, fw, ps, out, done)
+			recur(u, fw, ps, out, nil)
 		}
 	}
 
@@ -259,4 +264,12 @@ func copymap(m set) set {
 		n[k] = v
 	}
 	return n
+}
+
+func listcopy(list []string) []string {
+	c := make([]string, 0, len(list))
+	for _, n := range list {
+		c = append(c, n)
+	}
+	return c
 }
