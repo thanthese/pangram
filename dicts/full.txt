@@ -12387,7 +12387,6 @@ companionship
 companionway
 companionways
 company
-compaq
 comparability
 comparable
 comparably
@@ -47161,7 +47160,6 @@ pizzerias
 pizzicati
 pizzicato
 pizzicatos
-pkwy
 placard
 placarded
 placarding
