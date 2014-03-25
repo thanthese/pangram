@@ -61,6 +61,7 @@ func PrintPangrams(threshold int, wordlist []string) {
 	singlesOnly := removeDoubles(wordlist)
 	anagrams := buildAnagrams(singlesOnly)
 	words := mapKeys(anagrams)
+	sorted := specialSort(words)
 	fmt.Println("- ", len(wordlist), "words")
 	fmt.Println("- ", len(singlesOnly), "with unique letters")
 	fmt.Println("- ", len(anagrams), "anagrams")
@@ -68,7 +69,7 @@ func PrintPangrams(threshold int, wordlist []string) {
 	fmt.Println("Finding pangrams...")
 	used := set{}
 	found := []string{}
-	recur(used, found, words, anagrams)
+	recur(used, found, sorted, anagrams)
 }
 
 func recur(used set, foundwords []string, potentials []string, anagrams map[string][]string) {
@@ -127,6 +128,25 @@ func mapKeys(m map[string][]string) []string {
 		ret = append(ret, k)
 	}
 	return ret
+}
+
+func specialSort(words []string) []string {
+	q, rest := separateBy(words, "q")
+	z, rest2 := separateBy(rest, "z")
+
+	t := append(q, z...)
+	return append(t, rest2...)
+}
+
+func separateBy(words []string, r string) (has []string, hasnot []string) {
+	for _, w := range words {
+		if strings.Contains(w, r) {
+			has = append(has, w)
+		} else {
+			hasnot = append(hasnot, w)
+		}
+	}
+	return
 }
 
 func loadWordList(path string) []string {
