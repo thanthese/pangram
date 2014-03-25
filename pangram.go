@@ -12,9 +12,9 @@ import (
 
 // todo
 //
-// - None of my results contain a 'q' or 'z'. Maybe I can *force* the first two
-// words to have those letters. Then I could use a larger dictionary, but skip
-// the cost of a ton of computation.
+// - bug: Total number of leaves seen changes from run to run. Why?! There
+// shouldn't be anything random expect thread execution order, and those should
+// be entirely independent.
 
 const alphabet = "abcdefghijklmnopqrstuvwxyz"
 
@@ -54,6 +54,7 @@ func PrintPangrams(threshold int, wordlist []string) {
 	singlesOnly := removeDoubles(wordlist)
 	anagrams := buildAnagrams(singlesOnly)
 	words := mapKeys(anagrams)
+	sorted := specialSort(words)
 	fmt.Println("- ", len(wordlist), "words")
 	fmt.Println("- ", len(singlesOnly), "with unique letters")
 	fmt.Println("- ", len(anagrams), "anagrams")
@@ -62,7 +63,7 @@ func PrintPangrams(threshold int, wordlist []string) {
 	used := set{}
 	found := []string{}
 	out := make(chan []string)
-	recur(used, found, words, out, nil)
+	recur(used, found, sorted, out, nil)
 
 	n := 0
 	for words := range out {
@@ -85,6 +86,20 @@ func recur(used set, foundwords []string, potentials []string,
 	threads := 0
 	d := make(chan int)
 	for i, word := range potentials {
+
+		if len(foundwords) == 0 {
+			if !strings.ContainsAny(word, "q") {
+				continue
+			}
+		}
+
+		if len(foundwords) == 1 {
+			if !strings.ContainsAny(word, "z") &&
+				!strings.ContainsAny(foundwords[0], "z") {
+
+				continue
+			}
+		}
 
 		// prepare new set
 		u := copymap(used)
@@ -258,4 +273,23 @@ func listcopy(list []string) []string {
 		c = append(c, n)
 	}
 	return c
+}
+
+func specialSort(words []string) []string {
+	q, rest := separateBy(words, "q")
+	z, rest2 := separateBy(rest, "z")
+
+	t := append(q, z...)
+	return append(t, rest2...)
+}
+
+func separateBy(words []string, r string) (has []string, hasnot []string) {
+	for _, w := range words {
+		if strings.Contains(w, r) {
+			has = append(has, w)
+		} else {
+			hasnot = append(hasnot, w)
+		}
+	}
+	return
 }
