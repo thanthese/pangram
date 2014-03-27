@@ -44,10 +44,11 @@ Note that none use either a `q` or a `z`.
 
 A search of the full dictionary yielded some interesting results. When
 restricting my search to words that contain both a `q` and `z` I found no
-combinations that used more than 24 letters. Same when I required only a `q`.
-*But*, when I required only a `z` the program took off. Most runs prior to that
-took 0.5-2 hours. After *18* hours I ended the `z`-only run with *1200*
-combinations banked up that used 25 unique letters.
+combinations that used more than 24 letters (which means that no combinations
+use all 26 letters). Same when I required only a `q`.  *But*, when I required
+only a `z` the program took off. Most runs prior to that took 0.5-2 hours.
+After *18* hours I ended the `z`-only run with *1200* combinations banked up
+that used 25 unique letters.
 
 Moral of the story is that `q` is a much less friendly letter than `z`.
 
