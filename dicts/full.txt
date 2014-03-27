@@ -5649,7 +5649,6 @@ benumb
 benumbed
 benumbing
 benumbs
-benz
 benzedrine
 benzene
 beowulf
@@ -28041,7 +28040,6 @@ gwalior
 gwen
 gwendoline
 gwendolyn
-gwyn
 gybe
 gybed
 gybes
@@ -38821,7 +38819,6 @@ mckee
 mckenzie
 mckinley
 mckinney
-mcknight
 mclaughlin
 mclean
 mcleod
@@ -50181,7 +50178,6 @@ pythagorean
 pythias
 python
 pythons
-pyx
 pyxes
 qaddafi
 qantas
@@ -50502,7 +50498,6 @@ quizzes
 quizzical
 quizzically
 quizzing
-qumran
 quoit
 quoited
 quoiting
@@ -55487,12 +55482,6 @@ schliemann
 schlitz
 schlock
 schlocky
-schmaltz
-schmaltzier
-schmaltziest
-schmaltzy
-schmalz
-schmalzy
 schmidt
 schmooze
 schmoozed
@@ -60189,12 +60178,10 @@ squatter
 squatters
 squattest
 squatting
-squaw
 squawk
 squawked
 squawking
 squawks
-squaws
 squeak
 squeaked
 squeakier
@@ -61503,7 +61490,6 @@ styptics
 styrofoam
 styrofoams
 styron
-styx
 suarez
 suave
 suavely
